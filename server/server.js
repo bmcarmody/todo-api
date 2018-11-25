@@ -8,52 +8,56 @@ const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
 
-let app = express();
-const port = process.env.PORT || 3000;
+let app = express(); //Creates a server
+const port = process.env.PORT || 3000; //If on heroku, use the environment port, else use port 3000
 
-app.use(bodyParser.json());
+app.use(bodyParser.json()); //Middleware, handles the req and res requests
 
+//Creates an express route to /todos
 app.post('/todos', (req, res) => {
     let todo = new Todo({
-        text: req.body.text
+        text: req.body.text //Todo's text data
     });
 
     todo.save().then((doc) => {
-        res.send(doc);
+        res.send(doc); //Sends data to database and submits it
     }, (e) => {
-        res.status(400).send(e);
+        res.status(400).send(e); //If invalid, results in 404
     });
 });
 
 app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
-        res.send({todos});
+        res.send({todos}); //Returns Todos database
     }, (e) => {
-        res.status(400).send(e);
+        res.status(400).send(e); //Results in 404 if an error occurs
     });
 });
 
 app.get('/todos/:id', (req, res) => {
-    let id = req.params.id;
+    let id = req.params.id; //Gets id parameter from url
 
+    //If parameter isn't a valid mongo _id, results in a 404
     if(!ObjectID.isValid(id)) {
         return res.status(404).send();
     }
 
     Todo.findById(id).then((todo) => {
+        //If id cannot be found, results in a 404
         if (!todo) {
             return res.status(404).send();
         }
 
-        res.status(200).send({todo});
-    }).catch((e) => res.status(400).send(e));
+        res.status(200).send({todo}); //Display the result
+    }).catch((e) => res.status(400).send(e)); //If error, throw 404
 });
 
+//Listens on specific port which is determined at the beginning of the script
 app.listen(port, () => {
-    console.log('Started on port ${port}');
+    console.log(`Started on port ${port}`);
 });
 
-module.exports = {app};
+module.exports = {app}; //exports the app for testing
 
 
 
