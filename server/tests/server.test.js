@@ -49,7 +49,7 @@ describe('POST /todos', () => {
         request(app)
             .post('/todos')
             .send()
-            .expect(404)
+            .expect(400)
             .end((err, res) => {
                 if (err) {
                     return done(err);
@@ -100,7 +100,7 @@ describe('GET /todos/:id', () => {
 
         request(app)
             .get(`/todos/${invalidId}`)
-            .expect(404)
+            .expect(400)
             .end(done)
     });
 });
@@ -142,7 +142,7 @@ describe('DELETE /todos/:id', () => {
 
         request(app)
             .delete(`/todos/${invalidId}`)
-            .expect(404)
+            .expect(400)
             .end(done)
     });
 }); 
