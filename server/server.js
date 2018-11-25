@@ -40,7 +40,7 @@ app.get('/todos/:id', (req, res) => {
 
     //If parameter isn't a valid mongo _id, results in a 404
     if(!ObjectID.isValid(id)) {
-        return res.status(404).send();
+        return res.status(400).send();
     }
 
     Todo.findById(id).then((todo) => {
@@ -57,7 +57,7 @@ app.delete('/todos/:id', (req, res) => {
     let id = req.params.id;
 
     if(!ObjectID.isValid(id)) {
-        return res.status(404).send();
+        return res.status(400).send();
     }
 
     Todo.findByIdAndRemove(id).then((todo) => {

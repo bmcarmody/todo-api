@@ -12,7 +12,9 @@ const todos = [{
     text: 'First test'
 }, {
     _id: new ObjectID(),
-    text: 'Second test'
+    text: 'Second test',
+    completed: true,
+    complatedAt: 333
 }];
 
 beforeEach((done) => {
@@ -95,7 +97,7 @@ describe('GET /todos/:id', () => {
             .end(done)
     });
 
-    it('Should return 404 for non-object ids', (done) => {
+    it('Should return 400 for non-object ids', (done) => {
         let invalidId = 123;
 
         request(app)
@@ -137,7 +139,7 @@ describe('DELETE /todos/:id', () => {
             .end(done)
     });
 
-    it('Should return 404 if object id is invalid', (done) => {
+    it('Should return 400 if object id is invalid', (done) => {
         let invalidId = 123;
 
         request(app)
@@ -146,3 +148,47 @@ describe('DELETE /todos/:id', () => {
             .end(done)
     });
 }); 
+
+describe('PATCH /todos/:id', () => {
+    it('Should update the todo', (done) => {
+        let hexId = todos[0]._id.toHexString();
+        let updateBody = {
+            text: 'This is an updated body',
+            completed: true
+        }
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send(updateBody)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(updateBody.text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(typeof res.body.todo.completedAt).toBe('number');
+            })
+            .end(done)
+    });
+
+    it('Should clear completedAt when todo is not completed', (done) => {
+        let hexId = todos[1]._id.toHexString();
+            let updateBody = {
+                text: 'This is an updated body',
+                completed: false
+            }
+            request(app)
+                .patch(`/todos/${hexId}`)
+                .send(updateBody)
+                .expect(200)
+                .expect((res) => {
+                    expect(res.body.todo.text).toBe(updateBody.text);
+                    expect(res.body.todo.completed).toBe(false);
+                    expect(res.body.todo.completedAt).toBeFalsy();
+                })
+                .end(done)
+        
+        //grab id of second item
+        //update text, set completed false
+        //200
+        //text is changed, completed is false, completedAt is falsey
+    });
+});
+
