@@ -22,7 +22,7 @@ app.post('/todos', (req, res) => {
     todo.save().then((doc) => {
         res.send(doc); //Sends data to database and submits it
     }, (e) => {
-        res.status(400).send(e); //If invalid, results in 404
+        res.status(404).send(e); //If invalid, results in 404
     });
 });
 
@@ -30,7 +30,7 @@ app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
         res.send({todos}); //Returns Todos database
     }, (e) => {
-        res.status(400).send(e); //Results in 404 if an error occurs
+        res.status(404).send(e); //Results in 404 if an error occurs
     });
 });
 
@@ -49,7 +49,23 @@ app.get('/todos/:id', (req, res) => {
         }
 
         res.status(200).send({todo}); //Display the result
-    }).catch((e) => res.status(400).send(e)); //If error, throw 404
+    }).catch((e) => res.status(404).send(e)); //If error, throw 404
+});
+
+app.delete('/todos/:id', (req, res) => {
+    let id = req.params.id;
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Todo.findByIdAndRemove(id).then((todo) => {
+        if (!todo) {
+            return res.status(404).send();
+        }
+
+    res.status(200).send({todo});
+    }).catch((e) => res.status(404).send(e));
 });
 
 //Listens on specific port which is determined at the beginning of the script
