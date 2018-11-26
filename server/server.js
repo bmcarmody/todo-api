@@ -1,3 +1,5 @@
+require('./config/config');
+
 //Library imports
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -9,8 +11,8 @@ const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
 
+
 let app = express(); //Creates a server
-const port = process.env.PORT || 3000; //If on heroku, use the environment port, else use port 3000
 
 app.use(bodyParser.json()); //Middleware, handles the req and res requests
 
@@ -94,8 +96,8 @@ app.patch('/todos/:id', (req, res) => {
 });
 
 //Listens on specific port which is determined at the beginning of the script
-app.listen(port, () => {
-    console.log(`Started on port ${port}`);
+app.listen(process.env.PORT, () => {
+    console.log(`Started on port ${process.env.PORT}`);
 });
 
 module.exports = {app}; //exports the app for testing
