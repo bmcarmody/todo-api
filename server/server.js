@@ -10,6 +10,7 @@ const _ = require('lodash');
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
+const {authenticate} = require('./middleware/authenticate');
 
 
 let app = express(); //Creates a server
@@ -107,6 +108,10 @@ app.post('/users', (req, res) => {
     }), ((e) => {
         res.status(400).send(e); //If invalid, results in 404
     });
+});
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 });
 
 //Listens on specific port which is determined at the beginning of the script
