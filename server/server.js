@@ -15,7 +15,7 @@ const {authenticate} = require('./middleware/authenticate');
 
 let app = express(); //Creates a server
 
-app.use(bodyParser.json()); //Middleware, handles the req and res requests
+app.use(bodyParser.json()); //Middleware
 
 /**
  * Creates a POST /todos route
