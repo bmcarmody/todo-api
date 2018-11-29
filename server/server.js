@@ -105,9 +105,7 @@ app.post('/users', (req, res) => {
         return user.generateAuthToken();
     }).then((token) => {
         res.header('x-auth', token).send(user);
-    }), ((e) => {
-        res.status(400).send(e); //If invalid, results in 404
-    });
+    }).catch((e) => res.status(400).send(e)); //If invalid, results in 400
 });
 
 app.get('/users/me', authenticate, (req, res) => {
