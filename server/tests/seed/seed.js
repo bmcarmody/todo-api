@@ -1,3 +1,8 @@
+/**
+ * Generates user and todo data that is used in 
+ * mocha testing
+ */
+
 const {ObjectID} = require('mongodb');
 const jwt = require('jsonwebtoken');
 
