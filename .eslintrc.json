@@ -1,51 +1,64 @@
 {
-    "env": {
-        "es6": true,
-        "node": true,
-        "mongo": true,
-        "mocha": true
-    },
-    "extends": "airbnb",
-    "parserOptions": {
-        "ecmaVersion": 2016,
-        "sourceType": "module"
-    },
-    "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "comma-dangle": [
-            "error",
-            "never"
-        ],
-        "no-unused-vars": [
-            "error",
-            {
-                "vars": "local",
-                "args": "none"
-            }
-        ],
-        "no-underscore-dangle": [
-            0
-        ],
-        "quote-props": [
-            0
-        ],
-        "consistent-return": [
-            0
-        ] 
-    } 
+  "env": {
+    "es6": true,
+    "node": true,
+    "mongo": true,
+    "mocha": true
+  },
+  "extends": [
+    "airbnb",
+    "plugin:prettier/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2016,
+    "sourceType": "module"
+  },
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true
+      }
+    ],
+    "indent": [
+      "error",
+      2
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "comma-dangle": [
+      "error",
+      "never"
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "local",
+        "args": "none"
+      }
+    ],
+    "no-underscore-dangle": [
+      0
+    ],
+    "quote-props": [
+      0
+    ],
+    "consistent-return": [
+      0
+    ],
+    "func-names": [
+      "error",
+      "never"
+    ]
+  }
 }

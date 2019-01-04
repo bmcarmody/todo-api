@@ -12,7 +12,6 @@ const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
 const { authenticate } = require('./middleware/authenticate');
 
-
 const app = express(); // Creates a server
 
 app.use(bodyParser.json()); // Middleware
@@ -22,16 +21,19 @@ app.use(bodyParser.json()); // Middleware
  * Ensures that user is authenicated before posting
  */
 app.post('/todos', authenticate, (req, res) => {
-    const todo = new Todo({
-        text: req.body.text, // Todo's text data
-        _creator: req.user._id
-    });
+  const todo = new Todo({
+    text: req.body.text, // Todo's text data
+    _creator: req.user._id
+  });
 
-    todo.save().then((doc) => {
-        res.send(doc); // Sends data to database and submits it
-    }, (e) => {
-        res.status(400).send(e); // If invalid, results in 400
-    });
+  todo.save().then(
+    doc => {
+      res.send(doc); // Sends data to database and submits it
+    },
+    e => {
+      res.status(400).send(e); // If invalid, results in 400
+    }
+  );
 });
 
 /**
@@ -40,13 +42,16 @@ app.post('/todos', authenticate, (req, res) => {
  * all todos for specifc user
  */
 app.get('/todos', authenticate, (req, res) => {
-    Todo.find({
-        _creator: req.user._id // Find all posts with requested id from user
-    }).then((todos) => {
-        res.send({ todos }); // Returns Todos database
-    }, (e) => {
-        res.status(404).send(e); // Results in 404 if an error occurs
-    });
+  Todo.find({
+    _creator: req.user._id // Find all posts with requested id from user
+  }).then(
+    todos => {
+      res.send({ todos }); // Returns Todos database
+    },
+    e => {
+      res.status(404).send(e); // Results in 404 if an error occurs
+    }
+  );
 });
 
 /**
@@ -56,25 +61,29 @@ app.get('/todos', authenticate, (req, res) => {
  * was created by the user who is requesting it
  */
 app.get('/todos/:id', authenticate, (req, res) => {
-    const { id } = req.params; // Gets id parameter from url
+  const { id } = req.params; // Gets id parameter from url
 
-    // If parameter isn't a valid mongo _id, results in a 400
-    if (!ObjectID.isValid(id)) {
-        return res.status(400).send();
-    }
+  // If parameter isn't a valid mongo _id, results in a 400
+  if (!ObjectID.isValid(id)) {
+    return res.status(400).send();
+  }
 
-    // Searches the database for the post id and user id
-    Todo.findOne({
-        _id: id,
-        _creator: req.user._id // Gets the user id from the authenticate middleware
-    }).then((todo) => {
-        // If id cannot be found, results in a 404
-        if (!todo) {
-            return res.status(404).send();
-        }
+  // Searches the database for the post id and user id
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id // Gets the user id from the authenticate middleware
+  })
+    .then(todo => {
+      // If id cannot be found, results in a 404
+      if (!todo) {
+        return res.status(404).send();
+      }
 
-        res.status(200).send({ todo }); // Display the todo found by id
-    }).catch((e) => { res.status(400).send(e); }); // If error, throw 400
+      res.status(200).send({ todo }); // Display the todo found by id
+    })
+    .catch(e => {
+      res.status(400).send(e);
+    }); // If error, throw 400
 });
 
 /**
@@ -83,24 +92,28 @@ app.get('/todos/:id', authenticate, (req, res) => {
  * the post before deleting
  */
 app.delete('/todos/:id', authenticate, (req, res) => {
-    const { id } = req.params; // Gets post id
+  const { id } = req.params; // Gets post id
 
-    // If id isn't valid, throw 400
-    if (!ObjectID.isValid(id)) {
-        return res.status(400).send();
-    }
+  // If id isn't valid, throw 400
+  if (!ObjectID.isValid(id)) {
+    return res.status(400).send();
+  }
 
-    // Searches the data for post and removes it if found
-    Todo.findOneAndRemove({
-        _id: id,
-        _creator: req.user._id // Gets the user id from the authenticate middleware
-    }).then((todo) => {
-        // If no post if found with the following credentials, throws a 404
-        if (!todo) {
-            return res.status(404).send();
-        }
-        res.status(200).send({ todo }); // Sends a 200 when todo post is found and sends back post
-    }).catch((e) => { res.status(400).send(e); });
+  // Searches the data for post and removes it if found
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id // Gets the user id from the authenticate middleware
+  })
+    .then(todo => {
+      // If no post if found with the following credentials, throws a 404
+      if (!todo) {
+        return res.status(404).send();
+      }
+      res.status(200).send({ todo }); // Sends a 200 when todo post is found and sends back post
+    })
+    .catch(e => {
+      res.status(400).send(e);
+    });
 });
 
 /**
@@ -110,37 +123,41 @@ app.delete('/todos/:id', authenticate, (req, res) => {
  * before modifiying in the database
  */
 app.patch('/todos/:id', authenticate, (req, res) => {
-    const { id } = req.params;
-    const body = _.pick(req.body, ['text', 'completed']); // Only retreving the body elements that the user can modify
+  const { id } = req.params;
+  const body = _.pick(req.body, ['text', 'completed']); // Only retreving the body elements that the user can modify
 
-    // If id isn't valid, throws a 404
-    if (!ObjectID.isValid(id)) {
+  // If id isn't valid, throws a 404
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  // If completed = true, sets the complatedAt value to current time
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+  } else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  // Searches database with user credentials and updates post if found
+  Todo.findOneAndUpdate(
+    {
+      _id: id,
+      _creator: req.user._id
+    }, // Gets the user id from the authenticate middleware
+    { $set: body }, // Sets the value data in the database
+    { new: true }
+  )
+    .then(todo => {
+      // Returns a 404 if no todo was found in database
+      if (!todo) {
         return res.status(404).send();
-    }
-
-    // If completed = true, sets the complatedAt value to current time
-    if (_.isBoolean(body.completed) && body.completed) {
-        body.completedAt = new Date().getTime();
-    } else {
-        body.completed = false;
-        body.completedAt = null;
-    }
-
-    // Searches database with user credentials and updates post if found
-    Todo.findOneAndUpdate(
-        {
-            '_id': id,
-            '_creator': req.user._id
-        }, // Gets the user id from the authenticate middleware
-        { $set: body }, // Sets the value data in the database
-        { new: true }
-    ).then((todo) => {
-        // Returns a 404 if no todo was found in database
-        if (!todo) {
-            return res.status(404).send();
-        }
-        return res.send({ todo }); // Sends back modified todo
-    }).catch((e) => { res.status(400).send(); });
+      }
+      return res.send({ todo }); // Sends back modified todo
+    })
+    .catch(e => {
+      res.status(400).send();
+    });
 });
 
 /**
@@ -149,13 +166,19 @@ app.patch('/todos/:id', authenticate, (req, res) => {
  * then generates an auth token
  */
 app.post('/users', (req, res) => {
-    const body = _.pick(req.body, ['email', 'password']); // Gets email and password from request body
-    const user = new User(body);
+  const body = _.pick(req.body, ['email', 'password']); // Gets email and password from request body
+  const user = new User(body);
 
-    // Saves the user in the database, creating an auth token which is sends back
-    user.save().then(() => user.generateAuthToken()).then((token) => {
-        res.header('x-auth', token).send(user); // Sends back auth token and created user
-    }).catch((e) => { res.status(400).send(e); }); // If email/password fail, send back 400
+  // Saves the user in the database, creating an auth token which is sends back
+  user
+    .save()
+    .then(() => user.generateAuthToken())
+    .then(token => {
+      res.header('x-auth', token).send(user); // Sends back auth token and created user
+    })
+    .catch(e => {
+      res.status(400).send(e);
+    }); // If email/password fail, send back 400
 });
 
 /**
@@ -164,7 +187,7 @@ app.post('/users', (req, res) => {
  * and sends back user information such as id and email
  */
 app.get('/users/me', authenticate, (req, res) => {
-    res.send(req.user); // Uses authenticate middleware
+  res.send(req.user); // Uses authenticate middleware
 });
 
 /**
@@ -173,15 +196,17 @@ app.get('/users/me', authenticate, (req, res) => {
  * generates an auth token
  */
 app.post('/users/login', (req, res) => {
-    const body = _.pick(req.body, ['email', 'password']);
-    // Searches for user in the database with email and password
-    // Users.findByCredentials method is located in /models/user
-    User.findByCredentials(body.email, body.password).then((user) => { //eslint-disable-line
-        return user.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send(user); // Sends back user with x-auth token in header
-        });
-    }).catch((e) => {
-        res.status(400).send();
+  const body = _.pick(req.body, ['email', 'password']);
+  // Searches for user in the database with email and password
+  // Users.findByCredentials method is located in /models/user
+  User.findByCredentials(body.email, body.password)
+    .then(user =>
+      user.generateAuthToken().then(token => {
+        res.header('x-auth', token).send(user); // Sends back user with x-auth token in header
+      })
+    )
+    .catch(e => {
+      res.status(400).send();
     });
 });
 
@@ -191,16 +216,19 @@ app.post('/users/login', (req, res) => {
  * req.user.removeToken method is located in /models/user
  */
 app.delete('/users/me/token', authenticate, (req, res) => {
-    req.user.removeToken(req.token).then(() => {
-        res.status(200).send();
-    }, () => {
-        res.status(400).send();
-    });
+  req.user.removeToken(req.token).then(
+    () => {
+      res.status(200).send();
+    },
+    () => {
+      res.status(400).send();
+    }
+  );
 });
 
 // Listens on specific port which is determined at the beginning of the script
 app.listen(process.env.PORT, () => {
-    console.log(`Started on port ${process.env.PORT}`);
+  console.log(`Started on port ${process.env.PORT}`);  //eslint-disable-line
 });
 
 module.exports = { app }; // exports the app for testing
